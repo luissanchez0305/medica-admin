@@ -28,13 +28,47 @@ import Footer from "examples/Footer";
 import DataTable from "examples/Tables/DataTable";
 
 // Data
-import authorsTableData from "layouts/tables/data/authorsTableData";
-import projectsTableData from "layouts/tables/data/projectsTableData";
+import data from "layouts/tables/data/authorsTableData";
+import { useEffect, useState } from "react";
+import { collection, getDocs } from "firebase/firestore";
+import UserForm from "layouts/tables/userForm";
+import db from "../../firebase";
+
+// UserForm
 
 function Tables() {
-  const { columns, rows } = authorsTableData();
-  const { columns: pColumns, rows: pRows } = projectsTableData();
+  const [users, setUsers] = useState([]);
+  const [columns, setColumns] = useState([]);
+  const [isOpen, setIsOpen] = useState(false);
+  const [userId, setUserId] = useState(0);
 
+  const togglePopup = () => {
+    setUserId(0);
+    setIsOpen(!isOpen);
+  };
+
+  const openEditPopup = (id) => {
+    setUserId(id);
+    setIsOpen(true);
+  };
+
+  const fetchPost = async () => {
+    const querySnapshot = await getDocs(collection(db, "users"));
+    const newData = querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
+    return newData;
+  };
+
+  const getData = async () => {
+    const dataObj = await fetchPost();
+    const { columns: _columns, rows } = data(dataObj, openEditPopup);
+
+    setColumns(_columns);
+    setUsers(rows);
+  };
+
+  useEffect(() => {
+    getData();
+  }, []);
   return (
     <DashboardLayout>
       <DashboardNavbar />
@@ -53,50 +87,31 @@ function Tables() {
                 coloredShadow="info"
               >
                 <MDTypography variant="h6" color="white">
-                  Authors Table
+                  Users
                 </MDTypography>
               </MDBox>
               <MDBox pt={3}>
-                <DataTable
-                  table={{ columns, rows }}
-                  isSorted={false}
-                  entriesPerPage={false}
-                  showTotalEntries={false}
-                  noEndBorder
-                />
-              </MDBox>
-            </Card>
-          </Grid>
-          <Grid item xs={12}>
-            <Card>
-              <MDBox
-                mx={2}
-                mt={-3}
-                py={3}
-                px={2}
-                variant="gradient"
-                bgColor="info"
-                borderRadius="lg"
-                coloredShadow="info"
-              >
-                <MDTypography variant="h6" color="white">
-                  Projects Table
-                </MDTypography>
-              </MDBox>
-              <MDBox pt={3}>
-                <DataTable
-                  table={{ columns: pColumns, rows: pRows }}
-                  isSorted={false}
-                  entriesPerPage={false}
-                  showTotalEntries={false}
-                  noEndBorder
-                />
+                {users.length === 0 && (
+                  <MDTypography variant="h6" color="white">
+                    Loading...
+                  </MDTypography>
+                )}
+                {users.length > 0 && (
+                  <DataTable
+                    table={{ columns, rows: users }}
+                    isSorted={false}
+                    entriesPerPage={false}
+                    showTotalEntries={false}
+                    noEndBorder
+                  />
+                )}
               </MDBox>
             </Card>
           </Grid>
         </Grid>
       </MDBox>
-      <Footer />
+      {isOpen && <UserForm handleClose={togglePopup} getUsers={getData} userId={userId} />}
+      <Footer company={{ name: "EsferaSoluciones", href: "https://esferasoluciones.com" }} />
     </DashboardLayout>
   );
 }
