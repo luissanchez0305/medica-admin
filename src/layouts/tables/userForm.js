@@ -134,7 +134,8 @@ function UserForm({ handleClose, userId }) {
   };
 
   const getData = async (id) => {
-    if (!isEdit) {
+    console.log("id", id, isEdit);
+    if (id === 0) {
       const insurancesSnap = await getDocs(collection(db, "insurances"));
       setInsurances(
         insurancesSnap.docs.map((document) => ({
