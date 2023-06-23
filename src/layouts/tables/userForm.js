@@ -61,8 +61,8 @@ function UserForm({ handleClose, userId }) {
 
   const handleSubmit = async () => {
     setStatus("Saving...");
-
-    if (!isEdit) {
+    let currentUserUId = userUID;
+    if (!userUID) {
       const auth = getAuth(db.firebaseApp);
       try {
         const result = await createUserWithEmailAndPassword(auth, email, "123456");
@@ -75,7 +75,7 @@ function UserForm({ handleClose, userId }) {
         } */
 
         setUserUID(result.user.uid);
-
+        currentUserUId = result.user.uid;
         const userData = {
           uid: result.user.uid,
           email,
@@ -119,13 +119,13 @@ function UserForm({ handleClose, userId }) {
         const qIU = query(
           insurancesUsersRef,
           where("insurance", "==", insurance.id),
-          where("user", "==", userUID)
+          where("user", "==", currentUserUId)
         );
         const insurancesUsersSnap = await getDocs(qIU);
         if (!insurancesUsersSnap.docs.length) {
           await addDoc(collection(db, "insurancesUsers"), {
             insurance: insurance.id,
-            user: userUID,
+            user: currentUserUId,
             insuranceName: insurance.name,
           });
         }
