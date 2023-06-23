@@ -32,6 +32,7 @@ import data from "layouts/tables/data/authorsTableData";
 import { useEffect, useState } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import UserForm from "layouts/tables/userForm";
+import { Button } from "@mui/material";
 import db from "../../firebase";
 
 // UserForm
@@ -89,6 +90,11 @@ function Tables() {
                 <MDTypography variant="h6" color="white">
                   Users
                 </MDTypography>
+                <div align="end">
+                  <Button variant="outlined" color="success" onClick={togglePopup}>
+                    New
+                  </Button>
+                </div>
               </MDBox>
               <MDBox pt={3}>
                 {users.length === 0 && (

@@ -15,6 +15,7 @@ import {
   addDoc,
   collection,
   deleteDoc,
+  updateDoc,
   doc,
   getDoc,
   getDocs,
@@ -22,11 +23,14 @@ import {
   where,
 } from "firebase/firestore";
 import { Checkbox } from "@mui/material";
+import MDInput from "components/MDInput";
+import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
 import db from "../../firebase";
 
 function UserForm({ handleClose, userId }) {
   const isEdit = userId > 0;
   const [userUID, setUserUID] = useState("");
+  const [userDoc, setUserDoc] = useState();
   const [name, setName] = useState("");
   const [lastname, setLastname] = useState("");
   const [email, setEmail] = useState("");
@@ -35,8 +39,68 @@ function UserForm({ handleClose, userId }) {
   const [insurances, setInsurances] = useState([]);
   const [insurancesUsers, setInsurancesUsers] = useState([]);
 
+  const handleEmailChange = (event) => {
+    const { ...target } = event.target;
+    setEmail(target.value);
+  };
+
+  const handleNameChange = (event) => {
+    const { ...target } = event.target;
+    setName(target.value);
+  };
+
+  const handleLastNameChange = (event) => {
+    const { ...target } = event.target;
+    setLastname(target.value);
+  };
+
+  const handleAddressChange = (event) => {
+    const { ...target } = event.target;
+    setAddress(target.value);
+  };
+
   const handleSubmit = async () => {
     setStatus("Saving...");
+
+    if (!isEdit) {
+      const auth = getAuth(db.firebaseApp);
+      try {
+        const result = await createUserWithEmailAndPassword(auth, email, "123456");
+
+        console.log("result", result);
+        /* if (error) {
+          console.log(`error: ${error}`);
+          setStatus(`Error: ${error.message}`);
+          return;
+        } */
+
+        setUserUID(result.user.uid);
+
+        const userData = {
+          uid: result.user.uid,
+          email,
+          name,
+          lastname,
+          address,
+        };
+
+        await addDoc(collection(db, "users"), {
+          ...userData,
+        });
+      } catch (error) {
+        console.log(`error: ${error}`);
+        setStatus(`Error: ${error.message}`);
+        return;
+      }
+    } else {
+      await updateDoc(userDoc, {
+        name,
+        lastname,
+        email,
+        address,
+      });
+    }
+
     insurances
       .filter((i) => !i.checked)
       .forEach(async (insurance) => {
@@ -70,9 +134,19 @@ function UserForm({ handleClose, userId }) {
   };
 
   const getData = async (id) => {
+    if (!isEdit) {
+      const insurancesSnap = await getDocs(collection(db, "insurances"));
+      setInsurances(
+        insurancesSnap.docs.map((document) => ({
+          ...document.data(),
+          id: document.id,
+        }))
+      );
+      return;
+    }
     const userRef = doc(db, "users", id);
+    setUserDoc(userRef);
     const userSnap = await getDoc(userRef);
-    // const doc = await db.collection("entries").doc(id).get();
     const user = userSnap.data();
     setEmail(user.email);
     setName(user.name);
@@ -153,12 +227,65 @@ function UserForm({ handleClose, userId }) {
           </MDBox>
           <MDBox pt={4} pb={3} px={3}>
             <MDBox component="form" role="form">
-              <MDBox mb={4}>{email}</MDBox>
-              <MDBox mb={4}>{name}</MDBox>
-              <MDBox mb={4}>{lastname}</MDBox>
-              <MDBox mb={4}>{address}</MDBox>
-              {insurances.map((insurance) => (
-                <MDBox key={insurance.id} mb={4}>
+              <MDBox mb={4}>
+                {isEdit ? (
+                  { email }
+                ) : (
+                  <MDInput
+                    InputLabelProps={{ shrink: isEdit || (!isEdit && name) }}
+                    type="email"
+                    label="Email"
+                    name="email"
+                    variant="standard"
+                    value={email}
+                    fullWidth
+                    onChange={handleEmailChange}
+                  />
+                )}
+              </MDBox>
+              <MDBox mb={4}>
+                <MDInput
+                  InputLabelProps={{ shrink: isEdit || (!isEdit && name) }}
+                  type="text"
+                  label="Name"
+                  name="name"
+                  variant="standard"
+                  value={name}
+                  fullWidth
+                  onChange={handleNameChange}
+                />
+              </MDBox>
+              <MDBox mb={4}>
+                <MDInput
+                  InputLabelProps={{ shrink: isEdit || (!isEdit && lastname) }}
+                  type="text"
+                  label="Lastname"
+                  name="lastname"
+                  variant="standard"
+                  value={lastname}
+                  fullWidth
+                  onChange={handleLastNameChange}
+                />
+              </MDBox>
+              <MDBox mb={4}>
+                <MDInput
+                  InputLabelProps={{ shrink: isEdit || (!isEdit && address) }}
+                  type="text"
+                  label="Address"
+                  name="address"
+                  variant="standard"
+                  value={address}
+                  fullWidth
+                  onChange={handleAddressChange}
+                />
+              </MDBox>
+              <MDBox
+                mb={4}
+                style={{
+                  fontSize: "0.8rem",
+                }}
+              >
+                {insurances.map((insurance) => (
                   <MDBox component="label" htmlFor={insurance.id} mb={1}>
                     <Checkbox
                       checked={insurance.checked}
@@ -168,8 +295,8 @@ function UserForm({ handleClose, userId }) {
 
                     {insurance.name}
                   </MDBox>
-                </MDBox>
-              ))}
+                ))}
+              </MDBox>
               <MDBox mt={6} mb={1}>
                 <MDButton variant="gradient" color="info" fullWidth onClick={handleSubmit}>
                   Submit

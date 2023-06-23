@@ -4,14 +4,15 @@ import { getFirestore } from "firebase/firestore";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 // Your web app's Firebase configuration
+
 const firebaseConfig = {
-  apiKey: "AIzaSyANVrLz4z5Wy5j1TNsZYDoQSSznqJ4yIHc",
-  authDomain: "medica-90383.firebaseapp.com",
-  projectId: "medica-90383",
-  storageBucket: "medica-90383.appspot.com",
-  messagingSenderId: "847592309716",
-  appId: "1:847592309716:web:445d1c71a8a3f4d7e9cc41",
-  measurementId: "G-P7GWC55QKG",
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID,
+  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID,
 };
 // Initialize Firebase
 
