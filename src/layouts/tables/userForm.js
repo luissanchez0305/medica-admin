@@ -97,7 +97,7 @@ function UserForm({ handleClose, userId }) {
         name,
         lastname,
         email,
-        address,
+        address: address ?? "",
       });
     }
 
