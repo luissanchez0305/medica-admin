@@ -67,13 +67,6 @@ function UserForm({ handleClose, userId }) {
       try {
         const result = await createUserWithEmailAndPassword(auth, email, "123456");
 
-        console.log("result", result);
-        /* if (error) {
-          console.log(`error: ${error}`);
-          setStatus(`Error: ${error.message}`);
-          return;
-        } */
-
         setUserUID(result.user.uid);
         currentUserUId = result.user.uid;
         const userData = {
@@ -134,7 +127,6 @@ function UserForm({ handleClose, userId }) {
   };
 
   const getData = async (id) => {
-    console.log("id", id, isEdit);
     if (id === 0) {
       const insurancesSnap = await getDocs(collection(db, "insurances"));
       setInsurances(
@@ -177,7 +169,6 @@ function UserForm({ handleClose, userId }) {
 
   const handleCheckChanged = (event) => {
     const { checked, id } = event.target;
-    console.log("checked", checked, id);
     setInsurances(
       insurances.map((insurance) => {
         if (insurance.id === id) {
